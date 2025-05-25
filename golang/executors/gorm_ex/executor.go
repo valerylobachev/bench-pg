@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"math/rand"
 	"time"
 )
@@ -34,7 +35,20 @@ func NewExecutor(
 		port,
 	)
 
-	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
+	//newLogger := logger.New(
+	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	//	logger.Config{
+	//		SlowThreshold: time.Second, // Slow SQL threshold
+	//		LogLevel:      logger.Info, // Log level
+	//		//LogLevel:                  logger.Warn, // Log level
+	//		IgnoreRecordNotFoundError: false, // Ignore ErrRecordNotFound error for logger
+	//		Colorful:                  false, // Disable color
+	//	},
+	//)
+	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{
+		Logger:      logger.Default.LogMode(logger.Silent),
+		PrepareStmt: false,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -64,32 +78,25 @@ func (g GormExecutor) PurchaseMaterial(operation *domain.Purchase, user domain.U
 }
 
 func (g GormExecutor) SellMaterial(operation *domain.Sale, user domain.User) {
-	//TODO implement me
-	//panic("implement me")
+	sellMaterial(g.db, operation, user)
 }
 
 func (g GormExecutor) AccountCost(operation *domain.Cost, user domain.User) {
-	//TODO implement me
-	//panic("implement me")
+	accountCost(g.db, operation, user)
 }
 
 func (g GormExecutor) OpenPeriod(period domain.Period, user domain.User) {
-	//TODO implement me
-	//panic("implement me")
 	openPeriod(g.db, period.NextPeriod(), user)
 }
 
 func (g GormExecutor) ClosePeriod(period domain.Period, user domain.User) {
-	//TODO implement me
-	//panic("implement me")
+	closePeriod(g.db, period.PrevPeriod(), user)
 }
 
 func (g GormExecutor) PeriodReport(period domain.Period) {
-	//TODO implement me
-	//panic("implement me")
+	report(g.db, period, period)
 }
 
 func (g GormExecutor) YearReport(period domain.Period) {
-	//TODO implement me
-	//panic("implement me")
+	report(g.db, period.FirstPeriod(), period.LastPeriod())
 }

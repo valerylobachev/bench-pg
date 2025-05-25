@@ -71,7 +71,7 @@ func processOperation(
 		start := time.Now()
 		executor.ClosePeriod(op.Period, user)
 		duration := time.Now().Sub(start)
-		fmt.Printf("Close period %s done in %s\n", op.Period.NextPeriod().String(), duration.String())
+		fmt.Printf("Close period %s done in %s\n", op.Period.PrevPeriod().String(), duration.String())
 		result = operationResult{op.Period.Year(), op.Period.Month(), metrics.Operation{op}}
 	}
 	return result

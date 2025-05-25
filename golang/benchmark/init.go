@@ -13,7 +13,7 @@ func initPurchases(year int, vendors int, materials int) []domain.Purchase {
 		material := domain.NewMaterial(i)
 		vendor := domain.NewVendor(randGen.Intn(vendors))
 		price := decimal.NewFromInt(int64(randGen.Intn(100) + 100))
-		quantity := decimal.NewFromInt(int64(randGen.Intn(100) + 100))
+		quantity := decimal.NewFromInt(1000 * int64(randGen.Intn(100)+100))
 		res = append(res,
 			domain.Purchase{
 				Material: material,

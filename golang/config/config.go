@@ -60,8 +60,8 @@ func NewConfig() *Config {
 	flag.IntVar(&config.Materials, "materials", 100, "total materials")
 	flag.IntVar(&config.Users, "users", 20, "total users")
 	flag.IntVar(&config.StartYear, "start-year", 2025, "start year")
-	flag.IntVar(&config.Years, "years", 1, "years")
-	flag.IntVar(&config.Operations, "operations", 1000, "total operations")
+	flag.IntVar(&config.Years, "years", 5, "years")
+	flag.IntVar(&config.Operations, "operations", 10000, "total operations")
 	flag.StringVar(&config.Name, "name", "", "benchmark name")
 
 	if config.Name == "" {
