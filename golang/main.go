@@ -4,6 +4,7 @@ import (
 	"bench-pg-go/benchmark"
 	config2 "bench-pg-go/config"
 	"bench-pg-go/executors"
+	"bench-pg-go/statistics"
 	"fmt"
 	"runtime"
 )
@@ -25,9 +26,8 @@ func main() {
 		config.Lib,
 	)
 
-	/*metrics := */
-	benchmark.Run(config, executor)
+	metrics := benchmark.Run(config, executor)
 
-	//statistics.run(config, metrics)
+	statistics.Run(config, metrics)
 
 }

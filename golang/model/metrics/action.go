@@ -35,5 +35,5 @@ func NewOperationAction(operation domain.Operation) Operation {
 }
 
 func (o Operation) Type() string {
-	return o.Type()
+	return o.Operation.Code()
 }

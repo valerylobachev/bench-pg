@@ -10,7 +10,7 @@ pub async fn get_pool(
     connections: u32,
 ) -> PgPool {
     let connection_string = format!(
-        "postgres://{}:{}@{}:{}/{}",
+        "postgres://{}:{}@{}:{}/{}?sslmode=disable",
         username, password, host, port, db
     );
     PgPoolOptions::new()

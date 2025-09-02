@@ -4,11 +4,12 @@ import (
 	"bench-pg-go/api"
 	"bench-pg-go/model/domain"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"math/rand"
-	"time"
 )
 
 var randGen = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -52,7 +53,6 @@ func NewExecutor(
 	if err != nil {
 		panic(err)
 	}
-
 	sqlDB, err := db.DB()
 	if err != nil {
 		panic(err)
