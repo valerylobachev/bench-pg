@@ -5,9 +5,11 @@ import (
 	config2 "bench-pg-go/config"
 	"bench-pg-go/executors"
 	"fmt"
+	"runtime"
 )
 
 func main() {
+	runtime.GOMAXPROCS(25)
 
 	config := config2.NewConfig()
 

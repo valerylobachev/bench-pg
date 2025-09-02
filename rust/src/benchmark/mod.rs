@@ -74,11 +74,11 @@ async fn run_period(
     let operations = prepare_operations(period, config);
 
     let start = SystemTime::now();
-    let (result_sender, mut result_receiver) = tokio::sync::mpsc::channel::<TaskResult>(100);
+    let (result_sender, mut result_receiver) = tokio::sync::mpsc::channel::<TaskResult>(10000);
     let mut set = tokio::task::JoinSet::new();
     let user_senders = (0..config.users)
         .map(|u| {
-            let (task_sender, task_receiver) = tokio::sync::mpsc::channel::<Task>(100);
+            let (task_sender, task_receiver) = tokio::sync::mpsc::channel::<Task>(10000);
             let user = User(u);
             let result_sender = result_sender.clone();
             let executor = executor.clone();

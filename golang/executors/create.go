@@ -3,6 +3,7 @@ package executors
 import (
 	"bench-pg-go/api"
 	"bench-pg-go/executors/gorm_ex"
+	"bench-pg-go/executors/sqlx_ex"
 )
 
 func CreateExecutor(
@@ -17,6 +18,15 @@ func CreateExecutor(
 
 	if lib == "gorm" {
 		return gorm_ex.NewExecutor(
+			username,
+			password,
+			host,
+			port,
+			db,
+			connections,
+		)
+	} else if lib == "go-sqlx" {
+		return sqlx_ex.NewExecutor(
 			username,
 			password,
 			host,

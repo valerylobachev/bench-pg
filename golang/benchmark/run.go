@@ -68,7 +68,6 @@ func runPeriod(
 	executor api.ExecutorApi,
 	config *config2.Config,
 ) []metrics.DomainMetric {
-	metricArr := make([]metrics.DomainMetric, 0)
 	fmt.Printf("Processing period: %s\n", period.String())
 
 	operations := prepareOperations(period, config)
@@ -100,6 +99,7 @@ func runPeriod(
 		close(results)
 	}()
 
+	metricArr := make([]metrics.DomainMetric, 0, len(operations))
 	for res := range results {
 		metricArr = append(metricArr, res.Metric)
 	}

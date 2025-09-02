@@ -80,7 +80,7 @@ func closePeriod(db *gorm.DB, period domain.Period, user domain.User) {
 		}
 
 		diffAmountSubQuery := tx.Select("COALESCE(sum(amount),0)").
-			Where("material_id = ? and period = ? and account_id = '10.01' and debt_credit = 'C'",
+			Where("material_id = ? and period = ? and account_id = '10.02'",
 				materialId, currYp).
 			Table("fin_ledger_items").Scan(&diffAmount)
 		if diffAmountSubQuery.Error != nil {

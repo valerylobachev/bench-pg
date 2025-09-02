@@ -5,8 +5,8 @@ use serde::Serialize;
 #[serde(rename_all = "kebab-case")]
 pub enum DbLib {
     #[default]
-    Sqlx,
     Tokio,
+    Sqlx,
     Diesel,
 }
 
@@ -21,7 +21,7 @@ pub struct Config {
     pub host: String,
     #[arg(short, long, default_value_t = 5432)]
     pub port: u16,
-    #[arg(short = 'C', long, default_value_t = 20)]
+    #[arg(short = 'C', long, default_value_t = 12)]
     pub connections: u32,
     #[arg(short, long, default_value = "benchmark")]
     pub db: String,
@@ -33,13 +33,13 @@ pub struct Config {
     pub vendors: u32,
     #[arg(short, long, default_value_t = 100)]
     pub materials: u32,
-    #[arg(short, long, default_value_t = 20)]
+    #[arg(short, long, default_value_t = 12)]
     pub users: u32,
     #[arg(short, long, default_value_t = 2025)]
     pub start_year: u32,
     #[arg(short, long, default_value_t = 1)]
     pub years: u32,
-    #[arg(short, long, default_value_t = 1000)]
+    #[arg(short, long, default_value_t = 10000)]
     pub operations: usize,
     #[arg(short, long, default_value = "")]
     pub name: String,

@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
-	flag "github.com/spf13/pflag"
 	"strconv"
 	"strings"
+
+	flag "github.com/spf13/pflag"
 )
 
 type Config struct {
@@ -53,14 +54,15 @@ func NewConfig() *Config {
 	flag.StringVar(&config.Host, "host", "localhost", "database host")
 	flag.IntVar(&config.Port, "port", 5432, "database port")
 	flag.StringVar(&config.Db, "db", "benchmark", "database name")
-	flag.IntVar(&config.Connections, "connections", 20, "max db connections")
+	flag.IntVar(&config.Connections, "connections", 100, "max db connections")
 	flag.StringVar(&config.Lib, "lib", "gorm", "database library")
+	//flag.StringVar(&config.Lib, "lib", "go-sqlx", "database library")
 	flag.IntVar(&config.Customers, "customers", 100, "total customers")
 	flag.IntVar(&config.Vendors, "vendors", 100, "total vendors")
 	flag.IntVar(&config.Materials, "materials", 100, "total materials")
-	flag.IntVar(&config.Users, "users", 20, "total users")
+	flag.IntVar(&config.Users, "users", 100, "total users")
 	flag.IntVar(&config.StartYear, "start-year", 2025, "start year")
-	flag.IntVar(&config.Years, "years", 5, "years")
+	flag.IntVar(&config.Years, "years", 1, "years")
 	flag.IntVar(&config.Operations, "operations", 10000, "total operations")
 	flag.StringVar(&config.Name, "name", "", "benchmark name")
 
