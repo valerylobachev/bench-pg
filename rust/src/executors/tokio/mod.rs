@@ -11,6 +11,7 @@ use crate::api::ExecutorApi;
 use crate::model::domain::{Account, Cost, Period, Purchase, Sale, User};
 use deadpool_postgres::tokio_postgres::NoTls;
 use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod, tokio_postgres};
+use tokio_postgres::config::SslMode;
 
 pub struct TokioExecutor {
     pool: Pool,
@@ -31,6 +32,7 @@ impl TokioExecutor {
         pg_config.host(host);
         pg_config.port(port);
         pg_config.dbname(db);
+        pg_config.ssl_mode(SslMode::Disable);
         let mgr_config = ManagerConfig {
             recycling_method: RecyclingMethod::Fast,
         };

@@ -1,6 +1,12 @@
+mod cost;
 mod init;
-mod schema;
 mod open_period;
+mod post_document;
+mod purchase;
+mod schema;
+mod sale;
+mod report;
+mod close_period;
 
 use crate::api::ExecutorApi;
 use crate::model::domain::{Account, Cost, Period, Purchase, Sale, User};
@@ -21,7 +27,7 @@ impl DieselExecutor {
         connections: u32,
     ) -> DieselExecutor {
         let connection_string = format!(
-            "postgres://{}:{}@{}:{}/{}",
+            "postgres://{}:{}@{}:{}/{}?sslmode=disable",
             username, password, host, port, db
         );
         let manager = ConnectionManager::<PgConnection>::new(connection_string);
@@ -55,46 +61,53 @@ impl ExecutorApi for DieselExecutor {
         init::load_business_partners(customers, vendors, conn).await;
         init::load_materials(materials, start_year, conn).await;
         init::load_accounts(conn, accounts).await;
-        //  for purchase in purchases {
-        //      crate::executors::sqlx::purchase::purchase_material(conn, &purchase, User(0)).await;
-        //  }
+        for purchase in purchases {
+            purchase::purchase_material(conn, &purchase, User(0)).await;
+        }
         open_period::open_period(conn, Period::new(start_year as i32, 1), User(0)).await;
     }
 
     async fn purchase_material(&self, operation: &Purchase, user: User) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::purchase::purchase_material(conn, operation, user).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        purchase::purchase_material(conn, operation, user).await;
     }
 
     async fn sell_material(&self, operation: &Sale, user: User) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::sale::sell_material(conn, operation, user).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        sale::sell_material(conn, operation, user).await;
     }
 
     async fn account_cost(&self, operation: &Cost, user: User) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::cost::account_cost(conn, operation, user).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        cost::account_cost(conn, operation, user).await;
     }
 
     async fn open_period(&self, period: Period, user: User) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::open_period::open_period(conn, period.next_period(), user).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        open_period::open_period(conn, period.next_period(), user).await;
     }
 
     async fn close_period(&self, period: Period, user: User) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::close_period::close_period(conn, period.prev_period(), user).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        close_period::close_period(conn, period.prev_period(), user).await;
     }
 
     async fn period_report(&self, period: Period) {
-        // let pool = self.pool.clone();
-        // crate::executors::sqlx::report::report(conn, period, period).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        report::report(conn, period, period).await;
     }
 
     async fn year_report(&self, period: Period) {
-        // let pool = self.pool.clone();
-        // let start_period = period.first_period();
-        // let end_period = period.last_period();
-        // crate::executors::sqlx::report::report(conn, start_period, end_period).await;
+        let pool = self.pool.clone();
+        let conn = &mut pool.get().unwrap();
+        let start_period = period.first_period();
+        let end_period = period.last_period();
+        report::report(conn, start_period, end_period).await;
     }
 }

@@ -2,10 +2,11 @@ use self::init::init_purchases;
 use self::prepare_operations::prepare_operations;
 use self::task::{Task, TaskResult};
 use self::user_worker::user_worker;
-use super::config::Config;
 use super::api::ExecutorApi;
+use super::config::Config;
 use super::model::domain::{Account, Period, User};
 use super::model::metrics::{Action, DomainMetric};
+use async_channel::bounded;
 use std::sync::Arc;
 use std::time::SystemTime;
 
@@ -45,9 +46,8 @@ async fn run_year(
     let mut metrics = vec![];
     println!("Processing year {}", year);
     let start = SystemTime::now();
-    for period in 1..=12 {
-        let period_metrics =
-            run_period(Period::new(year as i32, period), executor, config).await;
+    for month in 1..=12 {
+        let period_metrics = run_period(Period::new(year as i32, month), executor, config).await;
         metrics.extend(period_metrics);
     }
     let duration = start.elapsed().unwrap();
@@ -68,98 +68,62 @@ async fn run_period(
     executor: &Arc<dyn ExecutorApi>,
     config: &Config,
 ) -> Vec<DomainMetric> {
-    let mut metrics = vec![];
     println!("Processing period: {}", period);
 
     let operations = prepare_operations(period, config);
+    let operations_count = operations.len();
 
     let start = SystemTime::now();
-    let (result_sender, mut result_receiver) = tokio::sync::mpsc::channel::<TaskResult>(10000);
-    let mut set = tokio::task::JoinSet::new();
-    let user_senders = (0..config.users)
-        .map(|u| {
-            let (task_sender, task_receiver) = tokio::sync::mpsc::channel::<Task>(10000);
-            let user = User(u);
-            let result_sender = result_sender.clone();
-            let executor = executor.clone();
-            set.spawn(async move {
-                user_worker(user, task_receiver, result_sender, executor).await
-            });
+
+    // create channels
+    let (task_sender, task_receiver) = bounded::<Task>(operations_count);
+    let (result_sender, result_receiver) = bounded::<TaskResult>(operations_count);
+
+    // start workers
+    let mut workers = Vec::new();
+    for u in 0..config.users {
+        let user = User(u);
+        let receiver = task_receiver.clone();
+        let sender = result_sender.clone();
+        let executor = executor.clone();
+        workers.push(tokio::spawn(async move {
+            user_worker(user, receiver, sender, executor).await
+        }));
+    }
+
+    tokio::spawn(async move {
+        // send tasks
+        for (index, operation) in operations.into_iter().enumerate() {
             task_sender
-        })
-        .collect::<Vec<_>>();
-
-    let mut operation_index = 0;
-
-    while operation_index < operations.len() && operation_index < user_senders.len() {
-        let task_sender = user_senders[operation_index].clone();
-        let operation = operations[operation_index].clone();
-        task_sender
-            .send(Task::Process {
-                index: operation_index,
-                operation,
-            })
-            .await
-            .expect(
-                format!(
-                    "Error sending task operation to user {}",
-                    User(operation_index as u32).id()
-                )
-                .as_str(),
-            );
-        operation_index += 1;
-    }
-    
-    let in_process = operation_index;
-
-    while operation_index < operations.len() {
-        match result_receiver.recv().await {
-            Some(TaskResult(metric)) => {
-                let user_no = metric.user_no as usize;
-                // println!("Metric: {:?}", &metric);
-                metrics.push(metric);
-                let operation = operations[operation_index].clone();
-                user_senders[user_no]
-                    .send(Task::Process {
-                        index: operation_index,
-                        operation,
-                    })
-                    .await
-                    .expect(
-                        format!("Error sending task operation to user no {}", user_no).as_str(),
-                    );
-                operation_index += 1;
-            }
-            None => break,
+                .send(Task { index, operation })
+                .await
+                .expect("Failed to send task");
         }
-    }
-    
-    for _ in 0..in_process {
-        match result_receiver.recv().await {
-            Some(TaskResult(metric)) => {
-                // println!("Metric: {:?}", &metric);
-                metrics.push(metric);
-            }
-            None => break,
+        // close task channel
+        drop(task_sender);
+        drop(task_receiver);
+    });
+
+    tokio::spawn(async move {
+        // waiting for workers to complete
+        for worker in workers {
+            worker.await.expect("Worker failed");
         }
+        // close result channel
+        drop(result_sender);
+    });
+
+    // collect results
+    let mut metrics = Vec::with_capacity(operations_count);
+    while let Ok(res) = result_receiver.recv().await {
+        metrics.push(res.0);
     }
 
-    for (i, user) in user_senders.iter().enumerate() {
-        user.send(Task::Done).await.expect(
-            format!(
-                "Error sending task operation to user {}",
-                User(i as u32).id()
-            )
-            .as_str(),
-        );
-    }
-
-    set.join_all().await;
     let duration = start.elapsed().unwrap();
     println!("Processing period {} done in {:?}", period, duration);
     metrics.push(DomainMetric {
         year: period.year(),
-        period: Some(period.period()),
+        period: Some(period.month()),
         index: 0,
         user_no: 0,
         action: Action::ProcessPeriod,

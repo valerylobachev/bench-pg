@@ -4,11 +4,11 @@ use sqlx::{Pool, Postgres};
 
 pub async fn clear_tables(pool: &Pool<Postgres>) {
     let clear_stmts = vec![
-        "TRUNCATE TABLE fin_ledger_items cascade;",
-        "TRUNCATE TABLE fin_accounts cascade;",
-        "TRUNCATE TABLE fin_material_periods cascade;",
-        "TRUNCATE TABLE fin_materials cascade;",
-        "TRUNCATE TABLE fin_business_partners cascade;",
+        "truncate table fin_ledger_items cascade;",
+        "truncate table fin_accounts cascade;",
+        "truncate table fin_material_periods cascade;",
+        "truncate table fin_materials cascade;",
+        "truncate table fin_business_partners cascade;",
     ];
     for stmt in clear_stmts {
         sqlx::query(stmt)
@@ -99,8 +99,8 @@ pub async fn load_accounts(pool: &Pool<Postgres>, accounts: Vec<Account>) {
 
     for account in accounts {
         sqlx::query(
-            "INSERT INTO fin_accounts (id, name, updated_by, updated_at) \
-                 VALUES ($1, $2, $3, now())",
+            r#"INSERT INTO fin_accounts (id, name, updated_by, updated_at) 
+                     VALUES ($1, $2, $3, now());"#,
         )
         .bind(&account.id)
         .bind(&account.name)

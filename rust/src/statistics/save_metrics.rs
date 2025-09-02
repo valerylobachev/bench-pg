@@ -142,10 +142,10 @@ impl MetricRecord {
                 record.material_id = Some(p.material.id());
                 record.posting_date = Some(p.posting_date);
             }
-            Action::ClosePeriod(p) => record.period = Some(p.period() as i32),
-            Action::OpenPeriod(p) => record.period = Some(p.period() as i32),
-            Action::PeriodReport(p) => record.period = Some(p.period() as i32),
-            Action::YearReport(p) => record.period = Some(p.period() as i32),
+            Action::ClosePeriod(p) => record.period = Some(p.month() as i32),
+            Action::OpenPeriod(p) => record.period = Some(p.month() as i32),
+            Action::PeriodReport(p) => record.period = Some(p.month() as i32),
+            Action::YearReport(p) => record.period = Some(p.month() as i32),
             _ => {}
         }
 

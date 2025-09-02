@@ -39,9 +39,6 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
             r#"select 
                  (select stock from fin_material_periods
                    where period = $4 and material_id = $2 ) as prev_stock,
---                  (select  COALESCE(sum(quantity),0)
---                    from ledger_items
---                     where period < $1 and material_id = $2 and account_id = '10.01' ) as prev_stock,
                  (select COALESCE(sum(quantity),0)
                    from fin_ledger_items
                    where period = $1 and material_id = $2 and account_id = '10.01' and debt_credit = 'D') as receipt,
@@ -138,11 +135,11 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
 
         // update actual price
         tx.execute(
-            "update fin_material_periods set \
+            r#"update fin_material_periods set 
               actual_price = $1,
-              updated_by = $2, \
-              updated_at = now() \
-              where material_id = $3 and period = $4",
+              updated_by = $2, 
+              updated_at = now() 
+              where material_id = $3 and period = $4"#,
             &[&actual_price, &user_id, &material_id, &period.year_period()],
         )
         .await

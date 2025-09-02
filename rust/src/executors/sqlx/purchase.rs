@@ -49,12 +49,12 @@ pub async fn purchase_material(pool: &Pool<Postgres>, op: &Purchase, user: User)
         ((mp.mov_avg_price * mp.stock + amount) / (mp.stock + op.quantity)).round_dp(2);
 
     sqlx::query!(
-        "update fin_material_periods set \
-                    mov_avg_price = $1, \
-                    stock = stock + $2,  \
-                    updated_by = $3,   \
-                    updated_at = now()   \
-                 where material_id = $4 and period >= $5",
+        r#"update fin_material_periods set 
+                    mov_avg_price = $1, 
+                    stock = stock + $2,  
+                    updated_by = $3,   
+                    updated_at = now()   
+                 where material_id = $4 and period >= $5"#,
         &new_mov_avg_price,
         &op.quantity,
         &user_id,

@@ -13,8 +13,8 @@ pub async fn open_period(client: &mut Client, period: Period, user: User) {
         let material_id: String = material.get(0);
         let r = client
             .query_one(
-                "select count(*) from fin_material_periods \
-                   where material_id = $1 and period = $2",
+                r#"select count(*) from fin_material_periods 
+                   where material_id = $1 and period = $2"#,
                 &[&material_id, &period.year_period()],
             )
             .await

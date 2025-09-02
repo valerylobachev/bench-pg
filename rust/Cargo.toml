@@ -18,3 +18,4 @@ rust_decimal = { version = "1.37.2", features = ["db-diesel2-postgres", "db-toki
 deadpool-postgres = "0.14.1"
 tokio-postgres = { version = "0.7.13", features = ["with-chrono-0_4"] }
 lazy_static = "1.5.0"
+async-channel = "2.5.0"

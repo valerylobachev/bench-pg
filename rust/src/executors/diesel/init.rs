@@ -38,30 +38,28 @@ pub async fn load_business_partners(
     vendors: u32,
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
 ) {
-    let user = User(0);
+    let user_id = &User(0).id();
     for i in 0..customers {
         let customer = Customer(i);
-        let bp = BusinessPartner {
-            id: &customer.id(),
-            name: &customer.name(),
-            updated_by: &user.id(),
-            updated_at: &Utc::now(),
-        };
         diesel::insert_into(fin_business_partners::dsl::fin_business_partners)
-            .values(&bp)
+            .values((
+                fin_business_partners::dsl::id.eq(&customer.id()),
+                fin_business_partners::dsl::name.eq(&customer.name()),
+                fin_business_partners::dsl::updated_by.eq(user_id),
+                fin_business_partners::dsl::updated_at.eq(&Utc::now()),
+            ))
             .execute(conn)
             .expect(format!("Failed to insert customer {}", customer.id()).as_str());
     }
     for i in 0..vendors {
         let vendor = Vendor(i);
-        let bp = BusinessPartner {
-            id: &vendor.id(),
-            name: &vendor.name(),
-            updated_by: &user.id(),
-            updated_at: &Utc::now(),
-        };
         diesel::insert_into(fin_business_partners::dsl::fin_business_partners)
-            .values(&bp)
+            .values((
+                fin_business_partners::dsl::id.eq(&vendor.id()),
+                fin_business_partners::dsl::name.eq(&vendor.name()),
+                fin_business_partners::dsl::updated_by.eq(user_id),
+                fin_business_partners::dsl::updated_at.eq(&Utc::now()),
+            ))
             .execute(conn)
             .expect(format!("Failed to insert vendor {}", vendor.id()).as_str());
     }

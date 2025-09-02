@@ -90,7 +90,7 @@ impl Period {
         self.0 as u32
     }
 
-    pub fn period(&self) -> u32 {
+    pub fn month(&self) -> u32 {
         self.1 as u32
     }
 }

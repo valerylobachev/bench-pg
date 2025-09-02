@@ -51,12 +51,12 @@ pub async fn purchase_material(client: &mut Client, op: &Purchase, user: User) {
     let new_mov_avg_price = ((mov_avg_price * stock + amount) / (stock + op.quantity)).round_dp(2);
 
     tx.execute(
-        "update fin_material_periods set \
-                    mov_avg_price = $1, \
-                    stock = stock + $2,  \
-                    updated_by = $3,   \
-                    updated_at = now()   \
-                 where material_id = $4 and period >= $5",
+        r#"update fin_material_periods set 
+                    mov_avg_price = $1, 
+                    stock = stock + $2,  
+                    updated_by = $3,   
+                    updated_at = now()   
+                 where material_id = $4 and period >= $5"#,
         &[
             &new_mov_avg_price,
             &op.quantity,

@@ -32,7 +32,7 @@ impl SqlxExecutor {
         connections: u32,
     ) -> SqlxExecutor {
         let connection_string = format!(
-            "postgres://{}:{}@{}:{}/{}",
+            "postgres://{}:{}@{}:{}/{}?sslmode=disable",
             username, password, host, port, db
         );
         let pool = PgPoolOptions::new()

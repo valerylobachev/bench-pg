@@ -12,8 +12,8 @@ pub async fn open_period(pool: &Pool<Postgres>, period: Period, user: User) {
     for material in materials {
         let material_id = material.id;
         let r = sqlx::query!(
-            "select count(*) from fin_material_periods \
-                   where material_id = $1 and period = $2",
+            r#"select count(*) from fin_material_periods 
+                   where material_id = $1 and period = $2;"#,
             &material_id,
             period.year_period(),
         )

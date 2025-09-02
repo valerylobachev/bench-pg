@@ -1,5 +1,5 @@
 /target
-
+golang/bench-pg-go
 
 ### macOS template
 # General
@@ -32,4 +32,3 @@ Temporary Items
 
 .idea/
 bin/
-

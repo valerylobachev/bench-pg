@@ -39,7 +39,7 @@ pub async fn save_statistics(
 
             if rule.calc_periods {
                 for month in 1..=12 {
-                    let period = Period::new(year as i32, month).period();
+                    let period = Period::new(year as i32, month).month();
                     let durations = year_metrics
                         .iter()
                         .filter(|m| m.period.map(|p| p == period).unwrap_or(false))

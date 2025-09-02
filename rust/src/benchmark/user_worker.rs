@@ -4,37 +4,30 @@ use crate::model::domain::{Operation, Period, User};
 use crate::model::metrics::{Action, DomainMetric};
 use std::sync::Arc;
 use std::time::SystemTime;
-use tokio::sync::mpsc::{Receiver, Sender};
+use async_channel::{Receiver, Sender};
 
 pub async fn user_worker(
     user: User,
-    mut task_receiver: Receiver<Task>,
-    result_sender: Sender<TaskResult>,
+    tasks: Receiver<Task>,
+    results: Sender<TaskResult>,
     executor: Arc<dyn ExecutorApi>,
 ) {
-    loop {
-        match task_receiver.recv().await {
-            Some(Task::Process { index, operation }) => {
-                let start = SystemTime::now();
-                let result = process_operation(user, operation, executor.clone()).await;
-                let duration = start.elapsed().unwrap().as_secs_f64();
-                let metric = DomainMetric {
-                    year: result.year,
-                    period: Some(result.period),
-                    index,
-                    user_no: user.0,
-                    action: result.action,
-                    duration,
-                };
-                result_sender
-                    .send(TaskResult(metric))
-                    .await
-                    .expect(format!("Error sending task result from user {}", user.id()).as_str());
-            }
-            _ => {
-                break;
-            }
-        }
+    while let Ok(task) = tasks.recv().await {
+        let start = SystemTime::now();
+        let result = process_operation(user, task.operation, executor.clone()).await;
+        let duration = start.elapsed().unwrap().as_secs_f64();
+        let metric = DomainMetric {
+            year: result.year,
+            period: Some(result.period),
+            index: task.index,
+            user_no: user.0,
+            action: result.action,
+            duration,
+        };
+        results
+            .send(TaskResult(metric))
+            .await
+            .expect(format!("Error sending task result from user {}", user.id()).as_str());
     }
 }
 
@@ -47,39 +40,39 @@ async fn process_operation(
         Operation::Purchase(operation) => {
             executor.purchase_material(&operation, user).await;
             let yp = Period::from(operation.posting_date);
-            OperationResult::new(yp.year(), yp.period(), Action::Purchase(operation))
+            OperationResult::new(yp.year(), yp.month(), Action::Purchase(operation))
         }
         Operation::Sale(operation) => {
             executor.sell_material(&operation, user).await;
             let yp = Period::from(operation.posting_date);
-            OperationResult::new(yp.year(), yp.period(), Action::Sale(operation))
+            OperationResult::new(yp.year(), yp.month(), Action::Sale(operation))
         }
         Operation::Cost(operation) => {
             executor.account_cost(&operation, user).await;
             let yp = Period::from(operation.posting_date);
-            OperationResult::new(yp.year(), yp.period(), Action::Cost(operation))
+            OperationResult::new(yp.year(), yp.month(), Action::Cost(operation))
         }
         Operation::PeriodReport(period) => {
             executor.period_report(period).await;
-            OperationResult::new(period.year(), period.period(), Action::PeriodReport(period))
+            OperationResult::new(period.year(), period.month(), Action::PeriodReport(period))
         }
         Operation::YearReport(period) => {
             executor.year_report(period).await;
-            OperationResult::new(period.year(), period.period(), Action::YearReport(period))
+            OperationResult::new(period.year(), period.month(), Action::YearReport(period))
         }
         Operation::OpenPeriod(period) => {
             let start = SystemTime::now();
             executor.open_period(period, user).await;
             let duration = start.elapsed().unwrap();
             println!("Open period {} done in {:?}", period.next_period(), duration);
-            OperationResult::new(period.year(), period.period(), Action::OpenPeriod(period))
+            OperationResult::new(period.year(), period.month(), Action::OpenPeriod(period))
         }
         Operation::ClosePeriod(period) => {
             let start = SystemTime::now();
             executor.close_period(period, user).await;
             let duration = start.elapsed().unwrap();
             println!("Closing period {} done in {:?}", period.prev_period(), duration);
-            OperationResult::new(period.year(), period.period(), Action::ClosePeriod(period))
+            OperationResult::new(period.year(), period.month(), Action::ClosePeriod(period))
         }
     }
 }
