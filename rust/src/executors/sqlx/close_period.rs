@@ -39,7 +39,7 @@ pub async fn close_period(pool: &Pool<Postgres>, period: Period, user: User){
         let cd = sqlx::query!(
             r#"select 
                  (select stock from fin_material_periods
-                   where period = $4 and material_id = $2 ) as prev_stock,
+                   where material_id = $2 and period = $4 ) as prev_stock,
                  (select COALESCE(sum(quantity),0)
                    from fin_ledger_items
                    where period = $1 and material_id = $2 and account_id = '10.01' and debt_credit = 'D') as receipt,
@@ -50,7 +50,7 @@ pub async fn close_period(pool: &Pool<Postgres>, period: Period, user: User){
                    from fin_ledger_items
                    where period = $1 and material_id = $2 and account_id = '10.02')  as diff_amount,
                  (select std_price from fin_material_periods
-                   where period = $3 and material_id = $2 ) as next_std_price"#,
+                   where material_id = $2 and period = $3 ) as next_std_price"#,
             curr_yp,
             &material_id,
             next_yp,

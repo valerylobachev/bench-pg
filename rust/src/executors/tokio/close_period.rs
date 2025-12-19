@@ -23,7 +23,7 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
                 "Cannot start close period transaction for material {} in period {}",
                 &material_id, period,
             )
-            .as_str(),
+                .as_str(),
         );
 
         let mp = tx
@@ -38,7 +38,7 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
         let cd = tx.query_one(
             r#"select 
                  (select stock from fin_material_periods
-                   where period = $4 and material_id = $2 ) as prev_stock,
+                   where material_id = $2 and period = $4 ) as prev_stock,
                  (select COALESCE(sum(quantity),0)
                    from fin_ledger_items
                    where period = $1 and material_id = $2 and account_id = '10.01' and debt_credit = 'D') as receipt,
@@ -49,11 +49,11 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
                    from fin_ledger_items
                    where period = $1 and material_id = $2 and account_id = '10.02')  as diff_amount,
                  (select std_price from fin_material_periods
-                   where period = $3 and material_id = $2 ) as next_std_price"#,
-           &[ &curr_yp,
-            &material_id,
-            &next_yp,
-            &period.prev_period().year_period()]
+                   where material_id = $2 and period = $3 ) as next_std_price"#,
+            &[ &curr_yp,
+                &material_id,
+                &next_yp,
+                &period.prev_period().year_period()]
         )
             .await
             .expect("Error calculate closing data");
@@ -89,7 +89,7 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
             INVENTORY_DIFF_ACCOUNT,
             &user_id,
         )
-        .await;
+            .await;
 
         // Отклонения на COGS: dc2 = d2 - ds2
         // Проводка Dt 90.02 Ct 10.02 dc2
@@ -104,7 +104,7 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
             INVENTORY_DIFF_ACCOUNT,
             &user_id,
         )
-        .await;
+            .await;
 
         let doc_no = format!("OPEN-{}-{}", next_yp, &material_id);
         // Отклонение след. периода ds3 = s3 * sp2 + ds2 - s3 * sp3
@@ -121,7 +121,7 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
             INVENTORY_ACCOUNT,
             &user_id,
         )
-        .await;
+            .await;
 
         // update next_std_price material period
         tx.execute(
@@ -130,8 +130,8 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
                  where id = $2"#,
             &[&actual_price, &material_id],
         )
-        .await
-        .expect("Error updating next_std_price in material");
+            .await
+            .expect("Error updating next_std_price in material");
 
         // update actual price
         tx.execute(
@@ -142,15 +142,15 @@ pub async fn close_period(client: &mut Client, period: Period, user: User) {
               where material_id = $3 and period = $4"#,
             &[&actual_price, &user_id, &material_id, &period.year_period()],
         )
-        .await
-        .expect("Error updating std_price in material period");
+            .await
+            .expect("Error updating std_price in material period");
 
         tx.commit().await.expect(
             format!(
                 "Cannot commit close period transaction for material {} in period {}",
                 &material_id, period,
             )
-            .as_str(),
+                .as_str(),
         );
     }
 }
@@ -196,8 +196,8 @@ async fn post_differences(
             &user_id,
         ],
     )
-    .await
-    .expect("Cannot insert post_differences line 1");
+        .await
+        .expect("Cannot insert post_differences line 1");
 
     tx.execute(
         r#"insert into fin_ledger_items ( period, doc_no, posting_date,
@@ -219,6 +219,6 @@ async fn post_differences(
             &user_id,
         ],
     )
-    .await
-    .expect("Cannot insert post_differences line 2");
+        .await
+        .expect("Cannot insert post_differences line 2");
 }
