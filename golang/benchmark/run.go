@@ -34,7 +34,7 @@ func Run(
 		metricArr = append(metricArr, yearMetrics...)
 	}
 	duration := time.Now().Sub(start)
-	fmt.Printf("Processing %d years done in %s\n", config.Years, duration.String())
+	fmt.Printf("Processing %d years done in %f\n", config.Years, duration.Seconds())
 
 	return metricArr
 
@@ -49,7 +49,7 @@ func runYear(year int, executor api.ExecutorApi, config *config2.Config) []metri
 		metricArr = append(metricArr, periodMetrics...)
 	}
 	duration := time.Now().Sub(start)
-	fmt.Printf("Processing year %d done in %s\n", year, duration.String())
+	fmt.Printf("Processing year %d done in %f\n", year, duration.Seconds())
 	metricArr = append(metricArr,
 		metrics.DomainMetric{
 			Year:     year,
@@ -106,7 +106,7 @@ func runPeriod(
 
 	duration := time.Now().Sub(start)
 
-	fmt.Printf("Processing period %s done in %s\n", period.String(), duration.String())
+	fmt.Printf("Processing period %s done in %f\n", period.String(), duration.Seconds())
 	month := period.Month()
 	metricArr = append(metricArr,
 		metrics.DomainMetric{

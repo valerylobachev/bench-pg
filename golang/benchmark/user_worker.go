@@ -65,13 +65,13 @@ func processOperation(
 		start := time.Now()
 		executor.OpenPeriod(op.Period, user)
 		duration := time.Now().Sub(start)
-		fmt.Printf("Open period %s done in %s\n", op.Period.NextPeriod().String(), duration.String())
+		fmt.Printf("Open period %s done in %f\n", op.Period.NextPeriod().String(), duration.Seconds())
 		result = operationResult{op.Period.Year(), op.Period.Month(), metrics.Operation{op}}
 	case domain.ClosePeriod:
 		start := time.Now()
 		executor.ClosePeriod(op.Period, user)
 		duration := time.Now().Sub(start)
-		fmt.Printf("Close period %s done in %s\n", op.Period.PrevPeriod().String(), duration.String())
+		fmt.Printf("Close period %s done in %f\n", op.Period.PrevPeriod().String(), duration.Seconds())
 		result = operationResult{op.Period.Year(), op.Period.Month(), metrics.Operation{op}}
 	}
 	return result
