@@ -4,9 +4,9 @@ use serde::Serialize;
 #[derive(clap::ValueEnum, Clone, Default, Debug, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum DbLib {
-    Sqlx,
-    Tokio,
     #[default]
+    Tokio,
+    Sqlx,
     Diesel,
 }
 
@@ -33,13 +33,13 @@ pub struct Config {
     pub vendors: u32,
     #[arg(short, long, default_value_t = 100)]
     pub materials: u32,
-    #[arg(short, long, default_value_t = 20)]
+    #[arg(short, long, default_value_t = 12)]
     pub users: u32,
     #[arg(short, long, default_value_t = 2025)]
     pub start_year: u32,
     #[arg(short, long, default_value_t = 1)]
     pub years: u32,
-    #[arg(short, long, default_value_t = 10000)]
+    #[arg(short, long, default_value_t = 20000)]
     pub operations: usize,
     #[arg(short, long, default_value = "")]
     pub name: String,
