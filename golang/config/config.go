@@ -73,5 +73,7 @@ func NewConfig() *Config {
 		)
 	}
 
+	flag.Parse()
+
 	return &config
 }
