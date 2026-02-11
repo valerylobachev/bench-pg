@@ -80,13 +80,13 @@ The executable will be available at `./target/release/bench-pg-rs`.
 | `-P`  | `--password`    | PostgreSQL password                   | `postgres`  |                           |
 | `-H`  | `--host`        | PostgreSQL host                       | `localhost` |                           |
 | `-p`  | `--port`        | PostgreSQL port                       | `5432`      |                           |
-| `-C`  | `--connections` | Size of the connection pool           | `20`        |                           |
+| `-C`  | `--connections` | Size of the connection pool           | `40`        |                           |
 | `-d`  | `--db`          | Database name                         | `benchmark` |                           |
 | `-l`  | `--lib`         | Database library to use               | `tokio`     | `tokio`, `sqlx`, `diesel` |
 | `-c`  | `--customers`   | Number of customers to generate       | `100`       |                           |
 | `-v`  | `--vendors`     | Number of vendors to generate         | `100`       |                           |
 | `-m`  | `--materials`   | Number of materials to generate       | `100`       |                           |
-| `-u`  | `--users`       | Number of system users                | `12`        |                           |
+| `-u`  | `--users`       | Number of system users                | `40`        |                           |
 | `-s`  | `--start-year`  | Start year for simulated operations   | `2025`      |                           |
 | `-y`  | `--years`       | Number of years of activity           | `1`         |                           |
 | `-o`  | `--operations`  | Total number of operations to execute | `20000`     |                           |
@@ -124,13 +124,13 @@ All options are passed as long flags (e.g., `--host localhost`).
 | `--password`    | PostgreSQL password                   | `postgres`  |                   |
 | `--host`        | PostgreSQL host                       | `localhost` |                   |
 | `--port`        | PostgreSQL port                       | `5432`      |                   |
-| `--connections` | Size of the connection pool           | `20`        |                   |
+| `--connections` | Size of the connection pool           | `40`        |                   |
 | `--db`          | Database name                         | `benchmark` |                   |
 | `--lib`         | Database library to use               | `go-sqlx`   | `gorm`, `go-sqlx` |
 | `--customers`   | Number of customers to generate       | `100`       |                   |
 | `--vendors`     | Number of vendors to generate         | `100`       |                   |
 | `--materials`   | Number of materials to generate       | `100`       |                   |
-| `--users`       | Number of system users                | `12`        |                   |
+| `--users`       | Number of system users                | `40`        |                   |
 | `--start-year`  | Start year for simulated operations   | `2025`      |                   |
 | `--years`       | Number of years of activity           | `1`         |                   |
 | `--operations`  | Total number of operations to execute | `20000`     |                   |

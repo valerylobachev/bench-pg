@@ -54,17 +54,18 @@ func NewConfig() *Config {
 	flag.StringVar(&config.Host, "host", "localhost", "database host")
 	flag.IntVar(&config.Port, "port", 5432, "database port")
 	flag.StringVar(&config.Db, "db", "benchmark", "database name")
-	flag.IntVar(&config.Connections, "connections", 20, "max db connections")
+	flag.IntVar(&config.Connections, "connections", 40, "max db connections")
 	//flag.StringVar(&config.Lib, "lib", "gorm", "database library")
 	flag.StringVar(&config.Lib, "lib", "go-sqlx", "database library")
 	flag.IntVar(&config.Customers, "customers", 100, "total customers")
 	flag.IntVar(&config.Vendors, "vendors", 100, "total vendors")
 	flag.IntVar(&config.Materials, "materials", 100, "total materials")
-	flag.IntVar(&config.Users, "users", 12, "total users")
+	flag.IntVar(&config.Users, "users", 40, "total users")
 	flag.IntVar(&config.StartYear, "start-year", 2025, "start year")
 	flag.IntVar(&config.Years, "years", 1, "years")
 	flag.IntVar(&config.Operations, "operations", 20000, "total operations")
 	flag.StringVar(&config.Name, "name", "", "benchmark name")
+	flag.Parse()
 
 	if config.Name == "" {
 		config.Name = fmt.Sprintf(
@@ -72,8 +73,6 @@ func NewConfig() *Config {
 			config.Lib, config.Users, config.Operations, config.Materials, config.Years,
 		)
 	}
-
-	flag.Parse()
 
 	return &config
 }
