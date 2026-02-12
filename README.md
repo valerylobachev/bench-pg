@@ -14,23 +14,27 @@ transactional operations over a simulated time period. This allows you to direct
 languages and database abstraction layers under exactly the same workload.
 
 <!-- TOC -->
+
 * [Features](#features)
 * [Requirements](#requirements)
 * [Repository Structure](#repository-structure)
 * [Database](#database)
 * [Rust Application (`bench-pg-rs`)](#rust-application-bench-pg-rs)
-  * [Building](#building)
-  * [Command Line Options](#command-line-options)
-  * [Example](#example)
+    * [Building](#building)
+    * [Command Line Options](#command-line-options)
+    * [Example](#example)
 * [Go Application (`bench-pg-go`)](#go-application-bench-pg-go)
-  * [Building](#building-1)
-  * [Command Line Options](#command-line-options-1)
-  * [Example](#example-1)
+    * [Building](#building-1)
+    * [Command Line Options](#command-line-options-1)
+    * [Example](#example-1)
 * [Workload Description](#workload-description)
 * [Benchmark Results](#benchmark-results)
-  * [Observations](#observations)
+    * [Observations](#observations)
+* [Code Size](#code-size)
+    * [Observations](#observations-1)
 * [License](#license)
 * [Contributing](#contributing)
+
 <!-- TOC -->
 
 ---
@@ -232,6 +236,41 @@ each library.
 These results illustrate the kind of comparative data you can obtain with `bench-pg`.  
 Remember that real‑world performance depends on many factors – hardware, PostgreSQL configuration, network latency, and
 the exact query mix. We encourage you to run your own benchmarks using settings that match your production environment.
+
+---
+
+## Code Size
+
+One of the project goals is to keep the benchmark harness **simple and auditable**, while the library‑specific
+implementations illustrate how different database drivers and ORMs express the same workload. The table below shows the
+lines of code (excluding blank lines and comments) for each component.
+
+| Component                          | Lines of code |
+|------------------------------------|--------------:|
+| Go benchmark harness               |           291 |
+| Rust benchmark harness             |           295 |
+| Rust sqlx implementation           |           695 |
+| Rust tokio-postgres implementation |           756 |
+| Go GORM implementation             |           799 |
+| Go sqlx implementation             |           872 |
+| Rust diesel implementation         |           880 |
+
+### Observations
+
+- The **benchmark harnesses** are extremely compact – **~300 lines** in both languages. This makes it easy to verify the
+  workload logic and configuration handling.
+- **Go sqlx** (872 lines) and **GORM** (799 lines) are the largest Go implementations. The difference is modest,
+  suggesting that both libraries require similar amounts of boilerplate for this benchmark.
+- Among Rust libraries, **sqlx** is the most concise (**695 lines**), thanks to its built‑in connection pooling and
+  async query macros.  
+  **tokio-postgres** (756 lines) is slightly larger, reflecting manual pool setup.  
+  **Diesel** (880 lines) requires schema definitions and explicit model structs, which increases the line count.
+- Overall, the **Go implementations are comparable in size** to the Rust ones, with sqlx and tokio-postgres falling in
+  between the two Go drivers.
+
+These figures give a rough indication of development and maintenance effort. However, lines of code should not be
+over‑interpreted – they do not account for the complexity of the libraries themselves or the expressiveness of each
+language. They do show that **all implementations are reasonably sized** and easy to understand.
 
 ---
 
