@@ -13,6 +13,26 @@ Both tools generate an identical dataset (customers, vendors, materials, users) 
 transactional operations over a simulated time period. This allows you to directly compare throughput and latency across
 languages and database abstraction layers under exactly the same workload.
 
+<!-- TOC -->
+* [Features](#features)
+* [Requirements](#requirements)
+* [Repository Structure](#repository-structure)
+* [Database](#database)
+* [Rust Application (`bench-pg-rs`)](#rust-application-bench-pg-rs)
+  * [Building](#building)
+  * [Command Line Options](#command-line-options)
+  * [Example](#example)
+* [Go Application (`bench-pg-go`)](#go-application-bench-pg-go)
+  * [Building](#building-1)
+  * [Command Line Options](#command-line-options-1)
+  * [Example](#example-1)
+* [Workload Description](#workload-description)
+* [Benchmark Results](#benchmark-results)
+  * [Observations](#observations)
+* [License](#license)
+* [Contributing](#contributing)
+<!-- TOC -->
+
 ---
 
 ## Features
@@ -45,7 +65,8 @@ bench-pg/
 │   └── ...
 ├── rust/               # Rust implementation (bench-pg-rs)
 │   ├── Cargo.toml
-│   └── src/
+│   ├── src/
+│   └── ...
 ├── sql/               
 │   └── ddl.sql         # Database schema
 └── README.md           # This file
@@ -53,7 +74,7 @@ bench-pg/
 
 ---
 
-## Database 
+## Database
 
 Database should be created and schema must be initialized. Schema file is located in  [sql/ddl.sql](sql/ddl.sql)
 
@@ -148,7 +169,7 @@ All options are passed as long flags (e.g., `--host localhost`).
 
 Both benchmarks follow an identical procedure to ensure fair comparison:
 
-1. **Schema initialisation** – Database and schema should be created before running benchmark.
+1. **Schema initialization** – Database and schema should be created before running benchmark.
 
 2. **Data generation** – Dimension tables are populated with the specified number of rows using random but realistic
    data.
@@ -156,6 +177,61 @@ Both benchmarks follow an identical procedure to ensure fair comparison:
 3. **Execution** – A fixed mix of business transactions (e.g., order placement, invoice generation, stock movements) is
    executed concurrently across the connection pool. Each transaction consists of multiple SQL statements and touches
    both dimension and fact tables.
+
+---
+
+## Benchmark Results
+
+To demonstrate the kind of performance data `bench-pg` produces, we ran all five supported database libraries under
+identical conditions.  
+The test was executed on a MacBook Pro (Apple M2 Max 12 vCPUs, 96 GB RAM, SSD storage) with the following workload
+parameters:
+
+| Option      | Value  |
+|-------------|--------|
+| Connections | 40     |
+| Users       | 40     |
+| Customers   | 100    |
+| Vendors     | 100    |
+| Materials   | 100    |
+| Start Year  | 2025   |
+| Years       | 3      |
+| Operations  | 10,000 |
+
+Each library was given a connection pool of 40 connections (the `--connections` setting) and ran the full mix of
+business transactions concurrently. The table below shows the total execution time and detailed latency percentiles for
+each library.
+
+| db_lib              | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|---------------------|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+| Go sqlx             |                760 |    3.01 |   20.68 |   29.51 |   38.31 |   39.49 |     39.49 |   39.49 |    21.10 |       10.65 |
+| Go GORM             |                788 |    2.67 |   21.89 |   29.19 |   41.19 |   43.17 |     43.17 |   43.17 |    21.90 |       10.90 |
+| Rust tokio-postgres |                848 |    3.04 |   23.57 |   32.25 |   40.94 |   42.55 |     42.95 |   43.00 |    23.56 |       11.76 |
+| Rust Diesel         |                885 |    3.55 |   25.21 |   32.95 |   41.64 |   42.96 |     43.27 |   43.31 |    24.59 |       11.36 |
+| Rust sqlx           |                896 |    3.30 |   25.79 |   35.16 |   42.07 |   44.79 |     45.61 |   45.70 |    24.90 |       12.20 |
+
+*Lower `total_duration` and lower latency percentiles are better.*
+
+![Benchmark Chart](chart.png)
+
+### Observations
+
+- **Go implementations** outperformed all Rust libraries in this test.  
+  `go-sqlx` was the fastest overall, completing the workload in **760 seconds** with the lowest p50 (20.68 ms) and p95 (
+  38.31 ms) latencies.
+- **GORM**, despite being a full‑featured ORM, finished only 3.7% slower than `go-sqlx` and still beat every Rust
+  library.
+- Among Rust libraries, **tokio-postgres** was the quickest, while **sqlx** (which uses asynchronous Rust) showed
+  slightly higher latencies and total runtime.  
+  This may reflect differences in connection pooling behavior and the overhead of the async runtime under this specific
+  workload.
+- **Diesel** – a synchronous, type‑safe ORM – performed similarly to `sqlx`, with marginally better p95 and p99 values.
+- All libraries exhibited stable performance, with standard deviations around 10–12 ms and tail latencies (p99.9)
+  remaining close to their p99 values.
+
+These results illustrate the kind of comparative data you can obtain with `bench-pg`.  
+Remember that real‑world performance depends on many factors – hardware, PostgreSQL configuration, network latency, and
+the exact query mix. We encourage you to run your own benchmarks using settings that match your production environment.
 
 ---
 
