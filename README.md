@@ -213,8 +213,8 @@ each library.
 ### Observations
 
 - **Go implementations** outperformed all Rust libraries in this test.  
-  `go-sqlx` was the fastest overall, completing the workload in **760 seconds** with the lowest p50 (20.68 ms) and p95 (
-  38.31 ms) latencies.
+  `go-sqlx` was the fastest overall, completing the workload in **760 seconds** with the lowest p50 (20.68 s) and p95 (
+  38.31 s) latencies.
 - **GORM**, despite being a full‑featured ORM, finished only 3.7% slower than `go-sqlx` and still beat every Rust
   library.
 - Among Rust libraries, **tokio-postgres** was the quickest, while **sqlx** (which uses asynchronous Rust) showed
@@ -222,7 +222,7 @@ each library.
   This may reflect differences in connection pooling behavior and the overhead of the async runtime under this specific
   workload.
 - **Diesel** – a synchronous, type‑safe ORM – performed similarly to `sqlx`, with marginally better p95 and p99 values.
-- All libraries exhibited stable performance, with standard deviations around 10–12 ms and tail latencies (p99.9)
+- All libraries exhibited stable performance, with standard deviations around 10–12 s and tail latencies (p99.9)
   remaining close to their p99 values.
 
 These results illustrate the kind of comparative data you can obtain with `bench-pg`.  
