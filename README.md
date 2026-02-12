@@ -183,15 +183,15 @@ identical conditions.
 The test was executed on a MacBook Pro (Apple M2 Max 12 vCPUs, 96 GB RAM, SSD storage) with the following workload
 parameters:
 
-| Option      | Value  |
-|-------------|--------|
-| Connections | 40     |
-| Users       | 40     |
-| Customers   | 100    |
-| Vendors     | 100    |
-| Materials   | 100    |
-| Start Year  | 2025   |
-| Years       | 3      |
+| Option      |  Value |
+|-------------|-------:|
+| Connections |     40 |
+| Users       |     40 |
+| Customers   |    100 |
+| Vendors     |    100 |
+| Materials   |    100 |
+| Start Year  |   2025 |
+| Years       |      3 |
 | Operations  | 10,000 |
 
 Each library was given a connection pool of 40 connections (the `--connections` setting) and ran the full mix of
