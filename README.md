@@ -44,9 +44,9 @@ languages and database abstraction layers under exactly the same workload.
 
 ## Requirements
 
-- **PostgreSQL** 12+ (any recent version)
-- **Rust** (edition 2021) – only for `bench-pg-rs`
-- **Go** 1.20+ – only for `bench-pg-go`
+- **PostgreSQL** 15+ (any recent version)
+- **Rust** (edition 2024) – only for `bench-pg-rs`
+- **Go** 1.25+ – only for `bench-pg-go`
 - A PostgreSQL database with a user that has full read/write and schema modification privileges.
 
 ---
