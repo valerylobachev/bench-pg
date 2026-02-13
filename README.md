@@ -194,13 +194,15 @@ The workload and environment were kept constant:
 | Operations  | 15,000 |
 
 The test was executed on a MacBook Pro (Apple M2 Max 12 vCPUs, 96 GB RAM, SSD storage).  
-The tables below show the complete set of metrics for each library.  
-*All latency values are in seconds (s).*
+
 
 *Lower `total_duration` are better.*
 
 ![Benchmark Chart](chart.png)
 
+
+The tables below show the complete set of metrics for each library.  
+*All latency values are in seconds (s).*
 
 ---
 
