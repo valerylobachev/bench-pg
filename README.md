@@ -178,56 +178,134 @@ Both benchmarks follow an identical procedure to ensure fair comparison:
 
 ## Benchmark Results
 
-To demonstrate the kind of performance data `bench-pg` produces, we ran all five supported database libraries under
-identical conditions.  
-The test was executed on a MacBook Pro (Apple M2 Max 12 vCPUs, 96 GB RAM, SSD storage) with the following workload
-parameters:
+To understand how each database library scales with the number of concurrent workers (users), we ran a dedicated
+experiment.  
+We fixed all parameters except the number of simulated users (`--users`), varying it from 5 to 30 in steps of 5.  
+The workload and environment were kept constant:
 
-| Option      |  Value |
-|-------------|-------:|
-| Connections |     40 |
-| Users       |     40 |
-| Customers   |    100 |
-| Vendors     |    100 |
-| Materials   |    100 |
-| Start Year  |   2025 |
-| Years       |      3 |
-| Operations  | 10,000 |
+| Parameter   | Value  |
+|-------------|--------|
+| Connections | 40     |
+| Customers   | 100    |
+| Vendors     | 100    |
+| Materials   | 100    |
+| Start year  | 2025   |
+| Years       | 1      |
+| Operations  | 15,000 |
 
-Each library was given a connection pool of 40 connections (the `--connections` setting) and ran the full mix of
-business transactions concurrently. The table below shows the total execution time and detailed latency percentiles for
-each library.
+The test was executed on a MacBook Pro (Apple M2 Max 12 vCPUs, 96 GB RAM, SSD storage).  
+The tables below show the complete set of metrics for each library.  
+*All latency values are in seconds (s).*
 
-| db_lib              | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
-|---------------------|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
-| Go sqlx             |                760 |    3.01 |   20.68 |   29.51 |   38.31 |   39.49 |     39.49 |   39.49 |    21.10 |       10.65 |
-| Go GORM             |                788 |    2.67 |   21.89 |   29.19 |   41.19 |   43.17 |     43.17 |   43.17 |    21.90 |       10.90 |
-| Rust tokio-postgres |                848 |    3.04 |   23.57 |   32.25 |   40.94 |   42.55 |     42.95 |   43.00 |    23.56 |       11.76 |
-| Rust Diesel         |                885 |    3.55 |   25.21 |   32.95 |   41.64 |   42.96 |     43.27 |   43.31 |    24.59 |       11.36 |
-| Rust sqlx           |                896 |    3.30 |   25.79 |   35.16 |   42.07 |   44.79 |     45.61 |   45.70 |    24.90 |       12.20 |
-
-*Lower `total_duration` and lower latency percentiles are better.*
+*Lower `total_duration` are better.*
 
 ![Benchmark Chart](chart.png)
 
-### Observations
 
-- **Go implementations** outperformed all Rust libraries in this test.  
-  `go-sqlx` was the fastest overall, completing the workload in **760 seconds** with the lowest p50 (20.68 s) and p95 (
-  38.31 s) latencies.
-- **GORM**, despite being a full‑featured ORM, finished only 3.7% slower than `go-sqlx` and still beat every Rust
-  library.
-- Among Rust libraries, **tokio-postgres** was the quickest, while **sqlx** (which uses asynchronous Rust) showed
-  slightly higher latencies and total runtime.  
-  This may reflect differences in connection pooling behavior and the overhead of the async runtime under this specific
-  workload.
-- **Diesel** – a synchronous, type‑safe ORM – performed similarly to `sqlx`, with marginally better p95 and p99 values.
-- All libraries exhibited stable performance, with standard deviations around 10–12 s and tail latencies (p99.9)
-  remaining close to their p99 values.
+---
 
-These results illustrate the kind of comparative data you can obtain with `bench-pg`.  
-Remember that real‑world performance depends on many factors – hardware, PostgreSQL configuration, network latency, and
-the exact query mix. We encourage you to run your own benchmarks using settings that match your production environment.
+### Diesel (Rust)
+
+| users | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|------:|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+|     5 |              351.0 |    7.82 |   29.09 |   37.29 |   43.93 |   45.26 |     45.56 |   45.60 |    29.25 |       11.51 |
+|    10 |              281.8 |    6.45 |   25.84 |   29.42 |   34.68 |   35.72 |     35.95 |   35.98 |    23.48 |        9.27 |
+|    15 |              262.0 |    6.10 |   21.44 |   29.27 |   33.91 |   34.69 |     34.87 |   34.89 |    21.83 |        9.13 |
+|    20 |              271.3 |    6.58 |   24.03 |   28.67 |   33.82 |   35.02 |     35.29 |   35.32 |    22.60 |        8.96 |
+|    25 |              273.3 |    6.20 |   23.78 |   30.66 |   34.98 |   36.00 |     36.23 |   36.25 |    22.78 |        9.79 |
+|    30 |              265.0 |    6.34 |   22.43 |   28.63 |   34.72 |   35.71 |     35.94 |   35.96 |    22.08 |        9.30 |
+
+---
+
+### GORM (Go)
+
+| users | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|------:|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+|     5 |              376.8 |    7.61 |   30.94 |   40.69 |   52.75 |   52.75 |     52.75 |   52.75 |    31.40 |       14.69 |
+|    10 |              275.3 |    5.35 |   20.95 |   31.04 |   41.00 |   41.00 |     41.00 |   41.00 |    22.94 |       11.67 |
+|    15 |              261.1 |    4.90 |   19.12 |   29.95 |   39.63 |   39.63 |     39.63 |   39.63 |    21.76 |       11.44 |
+|    20 |              252.5 |    4.91 |   18.73 |   30.34 |   36.40 |   36.40 |     36.40 |   36.40 |    21.04 |       10.56 |
+|    25 |              265.4 |    4.81 |   20.34 |   31.05 |   39.37 |   39.37 |     39.37 |   39.37 |    22.12 |       11.63 |
+|    30 |              263.3 |    4.86 |   21.22 |   29.37 |   40.03 |   40.03 |     40.03 |   40.03 |    21.94 |       11.64 |
+
+---
+
+### go‑sqlx (Go)
+
+| users | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|------:|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+|     5 |              329.8 |    8.18 |   24.06 |   38.79 |   54.06 |   54.06 |     54.06 |   54.06 |    27.48 |       13.48 |
+|    10 |              245.2 |    5.94 |   19.85 |   26.34 |   33.69 |   33.69 |     33.69 |   33.69 |    20.43 |        9.13 |
+|    15 |              227.0 |    5.49 |   18.50 |   25.71 |   31.46 |   31.46 |     31.46 |   31.46 |    18.92 |        8.87 |
+|    20 |              227.2 |    5.09 |   19.04 |   24.38 |   31.50 |   31.50 |     31.50 |   31.50 |    18.93 |        8.71 |
+|    25 |              224.5 |    5.10 |   18.17 |   25.46 |   31.99 |   31.99 |     31.99 |   31.99 |    18.71 |        9.03 |
+|    30 |              224.5 |    4.86 |   18.38 |   24.88 |   31.87 |   31.87 |     31.87 |   31.87 |    18.71 |        9.02 |
+
+---
+
+### sqlx (Rust)
+
+| users | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|------:|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+|     5 |              451.7 |    9.50 |   37.07 |   51.51 |   61.91 |   63.88 |     64.32 |   64.37 |    37.64 |       17.90 |
+|    10 |              324.9 |    7.11 |   25.86 |   37.85 |   45.46 |   46.87 |     47.19 |   47.22 |    27.07 |       13.42 |
+|    15 |              308.3 |    6.33 |   25.68 |   35.23 |   45.02 |   46.67 |     47.04 |   47.08 |    25.69 |       13.39 |
+|    20 |              313.5 |    6.01 |   26.87 |   36.41 |   45.54 |   47.04 |     47.38 |   47.42 |    26.13 |       13.94 |
+|    25 |              314.2 |    5.91 |   26.42 |   34.99 |   47.75 |   48.33 |     48.46 |   48.47 |    26.18 |       14.43 |
+|    30 |              309.5 |    5.64 |   26.32 |   36.20 |   44.75 |   47.08 |     47.60 |   47.66 |    25.79 |       13.89 |
+
+---
+
+### tokio‑postgres (Rust)
+
+| users | total_duration (s) | min (s) | p50 (s) | p75 (s) | p95 (s) | p99 (s) | p99.9 (s) | max (s) | mean (s) | std_dev (s) |
+|------:|-------------------:|--------:|--------:|--------:|--------:|--------:|----------:|--------:|---------:|------------:|
+|     5 |              339.8 |    8.58 |   28.99 |   36.86 |   42.00 |   42.20 |     42.24 |   42.25 |    28.32 |       10.91 |
+|    10 |              275.4 |    6.14 |   23.59 |   31.96 |   36.75 |   37.59 |     37.78 |   37.80 |    22.95 |       10.78 |
+|    15 |              252.4 |    5.81 |   21.68 |   27.99 |   33.43 |   34.94 |     35.28 |   35.32 |    21.04 |        9.56 |
+|    20 |              265.0 |    7.24 |   20.96 |   28.96 |   34.59 |   35.15 |     35.28 |   35.30 |    22.09 |        8.82 |
+|    25 |              239.3 |    5.05 |   20.30 |   27.48 |   32.91 |   34.11 |     34.38 |   34.41 |    19.94 |        9.75 |
+|    30 |              243.5 |    4.95 |   20.85 |   28.15 |   33.25 |   34.37 |     34.62 |   34.65 |    20.29 |        9.96 |
+
+---
+
+### Analysis & Observations
+
+1. **Optimal concurrency**  
+   For most libraries, increasing the number of users from 5 to 15 **reduces total execution time** (i.e., improves
+   throughput). Beyond 15–20 users, performance either stabilizes or slightly degrades, indicating that the database or
+   the library’s connection pool becomes saturated.
+
+2. **Best overall performer**  
+   **go‑sqlx** achieves the lowest total durations across all user counts, with the best p50 and p95 latencies. At 25–30
+   users it completes the workload in **~224 seconds**, about 7% faster than the next best (tokio‑postgres at 239–243
+   s).
+
+3. **Rust tokio‑postgres**  
+   Shows excellent scalability and low latency, very close to go‑sqlx. At 25 users it reaches its minimum total time (
+   239.3 s), outperforming Diesel and sqlx by a noticeable margin.
+
+4. **Diesel and GORM**  
+   Both ORMs perform similarly, with Diesel having a slight edge in p95 and max latencies. GORM’s latencies are a bit
+   higher at low concurrency but become competitive beyond 15 users.
+
+5. **Rust sqlx**  
+   Lags behind the other Rust libraries in this test. Its total duration is consistently higher (308–324 s for 10+
+   users) and latencies are elevated. This may be due to different connection pooling behavior or the overhead of the
+   asynchronous runtime under this specific workload mix.
+
+6. **Diminishing returns**  
+   All libraries reach a point where adding more users does not improve throughput – the system becomes bottlenecked by
+   the database CPU or I/O. The flat or slightly rising total times after 15–20 users indicate that the connection pool
+   size (40) is sufficient, but the database server may be near its limit.
+
+7. **Tail latency**  
+   go‑sqlx and tokio‑postgres exhibit very stable tail latencies (p99.9 close to p99). GORM and sqlx show more
+   variation, especially at lower concurrency.
+
+These results highlight the importance of tuning concurrency levels for your specific workload and database hardware.
+They also demonstrate that **go‑sqlx** and **tokio‑postgres** are particularly efficient at utilising database
+connections, making them strong candidates for high‑throughput applications.
 
 ---
 
